@@ -77,4 +77,15 @@ params.origFile = tifFile;
 results.heights = interp1(LUT(:,2), LUT(:,1), squeeze(data(:,:,bestColor)), 'nearest', 0);
 figure; imshow(results.heights,[dApprox-minus dApprox+plus]);
 
+
+
+%Export a Tiff file for arraypro analysis
+tiffSaveName = [datestr(now, 'HHMMSS') 'thickness_100x.tif'];
+cd(imfolder)
+height_scaled = results.heights.*100;
+height_scaled_int = uint16(height_scaled);
+imwrite(height_scaled_int, tiffSaveName)
+
 saveName = [datestr(now, 'HHMMSS') 'Results.mat'];
+[filename, pathname] = uiputfile(saveName, 'Save results as');
+save([pathname filesep filename], 'results', 'params');
