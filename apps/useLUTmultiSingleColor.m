@@ -1,6 +1,8 @@
-% useLUTmulti
+% useLUTmultiSingleColor
 
-% Use a lookup table that you've generated with 'generateAccurateLUT.m' to fit another image. If you haven't generated a lookup table yet, this function isn't for you.
+% Use a lookup table that you've generated with 'generateAccurateLUT.m' to
+% fit another image. If you haven't generated a lookup table yet, this
+% function isn't for you. This function only takes single channel images for both mirror and sample.
 
 
 % load the lookup table
@@ -39,23 +41,23 @@ for foldernumber = 1:num_folders - 1
         
         % load the first image to get the self-reference region
         f = figure('Name', 'Please select a region of bare Si');
-        tifdata = imread(tifFiles(m).name, 1);  % load tif file
+        tifdata = imread(tifFiles(m).name);  % load tif file
         [~, selfRefRegion] = imcrop(tifdata, median(double(tifdata(:)))*[.8 1.2]);
         pause(0.01); % so the window can close
         close(f);
         
         % Load the images. Normalize by the mirrors and self-reference regions
-        data = zeros(size(tifdata,1), size(tifdata,2), 4);
-        for channel = 1:4
-            I = imread(tifFiles(m).name, channel);
-            mir = imread(mirFile, channel);
-            In = double(I)./double(mir);
-            sRef = imcrop(In, selfRefRegion);
-            data(:,:,channel) = In./median(sRef(:));
-        end
+        data = zeros(size(tifdata,1), size(tifdata,2));
+       
+        I = tifdata;
+        mir = imread(mirFile);
+        In = double(I)./double(mir);
+        sRef = imcrop(In, selfRefRegion);
+        data(:,:) = In./median(sRef(:));
+      
         
         %Fit data
-        results.heights = interp1(LUT(:,2), LUT(:,1), squeeze(data(:,:,bestColor)), 'nearest', 0);
+        results.heights = interp1(LUT(:,2), LUT(:,1), data(:,:), 'nearest', 0);
             
             
         % Save the LUT with the Parameters
@@ -75,5 +77,5 @@ for foldernumber = 1:num_folders - 1
     end
 end
 
-disp(['Analysis of ' num2str(k) ' images complete!!'])
+disp(['Analysis of ' num2str(k) ' images complete using the Look-up table from channel ' num2str(lutF.results.bestColor)])
 
